@@ -1,22 +1,550 @@
-\documentclass{article}
-\usepackage{color}
+\documentclass{article} 
+\usepackage{color} 
+\usepackage{forest}
 \usepackage[utf8]{inputenc}
-\begin{document}
-\title{TDT4225 -- Assignment 2}
+\begin{document} 
+\title{TDT4225 -- Assignment 2} 
 \author{Filip F Egge}
-\date{October 8, 2015}
+\date{October 8, 2015} 
 \maketitle
 
 \newpage
 
-\subsubsection{Explain the adaptive replacement cache of ZFS, with focus on how it supports different access
-patterns of blocks?}
-The adaptive replacement cache or ARC for short is a way of managing cache. It splits the cache into two parts, one holding blocks that
-have only been referenced once, and the other holding blocks that have been referenced twice or more.
-ZFS changes the size of the parts dynamicly by using four lists of blocks; $t_1, t_2, b_1, b_2$. $t_1$ containing blocks that have been
-cached after beeing referenced, $t_2$ containing blocks re-referenced while in the first list. $b_1$ and $b_2$ contain reference 
-to blocks that are evicted from cache, $b_1$ are those evicted from $t_1$ and $b_2$ those from $t_2$. When a block in $b_1$ is referenced, the algorithm makes room in $t_1$ at the expence of $t_2$ and vice versa.
+\subsection*{Explain the adaptive replacement cache of ZFS, with focus on how
+it supports different access patterns of blocks?} 
+The adaptive replacement cache or ARC for short is a way of managing cache. It
+splits the cache into two parts, one holding blocks that have only been
+referenced once, and the other holding blocks that have been referenced twice or
+more.  ZFS changes the size of the parts dynamically by using four lists of
+blocks; $t_1, t_2, b_1, b_2$. $t_1$ containing blocks that have been cached
+after being referenced, $t_2$ containing blocks re-referenced while in the first
+list. $b_1$ and $b_2$ contain reference to blocks that are evicted from cache,
+$b_1$ are those evicted from $t_1$ and $b_2$ those from $t_2$. When a block in
+$b_1$ is referenced, the algorithm makes room in $t_1$ at the expense of $t_2$
+and vice versa.
 
-\subsubsection{Under which conditions may the use of a Bloom filter be appropriate?}
-Bloom filter
+\subsection*{Under which conditions may the use of a Bloom filter be
+appropriate?} Bloom filter are commonly used to reduce the number of records at
+an early state. Since bloom filters will never produce a false negative, only
+false positives, it is mostly used to exclude records from a search.
+
+\subsection*{Give an overview of LevelDB's architecture showing how put and
+get are using the log, MemTable and SSTables.} 
+In LevelDB the log is used to store a sequence of recent updates. When the log
+reaches its max size, it will be converted into a sorted table and a new log
+file is created. A copy of the log is kept in a memtable. This copy is consulted
+on every get so that get operations reflect all logged updates. 
+
+\subsection*{Give an overview of LMDB's architecture showing how put and get
+are handled}
+LMDB uses a copy-on-write B+ Tree to store data. This means that when LMDB
+executes a write operation, it will create a new copy of the B+ tree. This
+enables read operations to occur concurrently. When the write operation is
+committed, the new tree becomes the "current" tree.
+
+\subsection{SSD vs HDD}
+\[
+    20\,000 \times 2KB = 40\,000 KB = 40 MB
+\]
+\[
+    40 MB \div 250 MB/S = 0.16 S
+\]
+\[
+    40 MB \div 800KB = 50 tracks/rounds
+\]
+\[ 
+    50 / 0.16 S = 312.5 RPS =  18\,750 RPM
+\]
+
+The disk will need to spin at 18750 RPM to be able to boot as fast as the SSD
+
+\subsection*{Sorting 1}
+\subsubsection*{How long time is needed by the CPU for initial sort (CPU time
+    for pulling the records through
+the looser tree)?}
+
+You are to sort a file with 200 million records, record length is 100 byte, and
+the key is 12 byte. You have a work space of 200 MB.
+Our workspace holds $200 MB / 112 B \approx 1\,785\,714$ records. This gives us a
+height of the tournament tree of $h = \lceil log_2 1\,785\,714 \rceil = 21$.
+This means we have to perform 17 comparisons for each run. This gives us $17
+\times 10^{-6} \times 200 \times 10^6 = 3400\: s = 56$ minutes and $40$ seconds.
+
+\subsubsection*{Assume I/O and CPU to work in parallel. How long time does the
+complete sort take?}
+Number of runs is $ N = \frac{22\:400\:MB}{2 \times 200\:MB} = 56 $
+To calculate I/O time we use the following formula. Where $b$ is block size, in
+this case 4 KB. $c$ is transfer time per volume unit, $bc$ is here 0.1
+microseconds. $a$ is the access overhead, on SSD this is about 0.1 ms.
+\[
+    T_V^S = \frac{V}{b}\left(a+bc\right)
+\]
+\[
+    T_V^S = \frac{22\:400\:MB}{4\:KB}(0.1 Ms + 0.1 \mu s) \approx 
+    \mbox{9 minutes 20 seconds}
+\]
+Total sort time is them 1 hour and 4 minutes.
+
+\subsection*{Sorting 2}
+
+\begin{forest}
+    for tree={circle, draw}
+    [3, red,
+        [32,
+            [32]
+            [44]
+        ]
+        [3, red
+            [10]
+            [3, red]
+        ]
+    ]
+\end{forest}
+\begin{forest}
+    for tree={circle, draw}
+    [32,
+        [44,
+            [32]
+            [44]
+        ]
+        [10,
+            [10]
+            [3]
+        ]
+    ]
+\end{forest}
+
+
+\begin{forest}
+    for tree={circle, draw}
+    [5, red,
+        [32,
+            [32]
+            [44]
+        ]
+        [5, red
+            [10]
+            [5, red]
+        ]
+    ]
+\end{forest}
+\begin{forest}
+    for tree={circle, draw}
+    [32,
+        [44,
+            [32]
+            [44]
+        ]
+        [10,
+            [10]
+            [5]
+        ]
+    ]
+\end{forest}
+
+\begin{forest}
+    for tree={circle, draw}
+    [10, red,
+        [32,
+            [32]
+            [44]
+        ]
+        [10, red
+            [10, red]
+            [79]
+        ]
+    ]
+\end{forest}
+\begin{forest}
+    for tree={circle, draw}
+    [32,
+        [44,
+            [32]
+            [44]
+        ]
+        [79,
+            [10]
+            [79]
+        ]
+    ]
+\end{forest}
+
+
+\begin{forest}
+    for tree={circle, draw}
+    [32, red,
+        [32, red,
+            [32, red]
+            [44]
+        ]
+        [64,
+            [64]
+            [79]
+        ]
+    ]
+\end{forest}
+\begin{forest}
+    for tree={circle, draw}
+    [64,
+        [44,
+            [32]
+            [44]
+        ]
+        [79,
+            [64]
+            [79]
+        ]
+    ]
+\end{forest}
+
+\begin{forest}
+    for tree={circle, draw}
+    [43, red,
+        [43, red
+            [43, red]
+            [44]
+        ]
+        [64,
+            [64]
+            [79]
+        ]
+    ]
+\end{forest}
+\begin{forest}
+    for tree={circle, draw}
+    [64,
+        [44,
+            [32]
+            [44]
+        ]
+        [79,
+            [64]
+            [79]
+        ]
+    ]
+\end{forest}
+
+
+\begin{forest}
+    for tree={circle, draw}
+    [43, red
+        [43,red
+            [98]
+            [44, red]
+        ]
+        [64,
+            [64]
+            [79]
+        ]
+    ]
+\end{forest}
+\begin{forest}
+    for tree={circle, draw}
+    [64,
+        [98,
+            [98]
+            [44]
+        ]
+        [79,
+            [64]
+            [79]
+        ]
+    ]
+\end{forest}
+
+
+\begin{forest}
+    for tree={circle, draw}
+    [43, red
+        [43,red
+            [98]
+            [44, red]
+        ]
+        [64,
+            [64]
+            [79]
+        ]
+    ]
+\end{forest}
+\begin{forest}
+    for tree={circle, draw}
+    [64,
+        [98,
+            [98]
+            [44]
+        ]
+        [79,
+            [64]
+            [79]
+        ]
+    ]
+\end{forest}
+
+\begin{forest}
+    for tree={circle, draw}
+    [64, red
+        [98,
+            [98]
+            [33]
+        ]
+        [64, red
+            [64, red]
+            [79]
+        ]
+    ]
+\end{forest}
+\begin{forest}
+    for tree={circle, draw}
+    [98,
+        [33,
+            [98]
+            [33]
+        ]
+        [79,
+            [64]
+            [79]
+        ]
+    ]
+\end{forest}
+
+
+\begin{forest}
+    for tree={circle, draw}
+    [79, red
+        [98,
+            [98]
+            [33]
+        ]
+        [79, red
+            [8]
+            [79, red]
+        ]
+    ]
+\end{forest}
+\begin{forest}
+    for tree={circle, draw}
+    [98,
+        [33,
+            [98]
+            [33]
+        ]
+        [8,
+            [8]
+            [79]
+        ]
+    ]
+\end{forest}
+
+\begin{forest}
+    for tree={circle, draw}
+    [98, red
+        [98, red
+            [98, red]
+            [33]
+        ]
+        [3,
+            [8]
+            [3]
+        ]
+    ]
+\end{forest}
+\begin{forest}
+    for tree={circle, draw}
+    [33,
+        [33,
+            [98]
+            [33]
+        ]
+        [8,
+            [8]
+            [3]
+        ]
+    ]
+\end{forest}
+
+
+\begin{forest}
+    for tree={circle, draw}
+    [3, red
+        [5,
+            [5]
+            [33]
+        ]
+        [3, red
+            [8]
+            [3, red]
+        ]
+    ]
+\end{forest}
+\begin{forest}
+    for tree={circle, draw}
+    [5,
+        [33,
+            [5]
+            [33]
+        ]
+        [8,
+            [8]
+            [3]
+        ]
+    ]
+\end{forest}
+
+
+\begin{forest}
+    for tree={circle, draw}
+    [5, red
+        [5,
+            [5]
+            [33]
+        ]
+        [5, red
+            [8]
+            [5, red]
+        ]
+    ]
+\end{forest}
+\begin{forest}
+    for tree={circle, draw}
+    [5,
+        [33,
+            [5]
+            [33]
+        ]
+        [8,
+            [8]
+            [5]
+        ]
+    ]
+\end{forest}
+
+\begin{forest}
+    for tree={circle, draw}
+    [5, red
+        [33,
+            [2]
+            [33]
+        ]
+        [5, red
+            [8]
+            [5, red]
+        ]
+    ]
+\end{forest}
+\begin{forest}
+    for tree={circle, draw}
+    [33,
+        [2,
+            [2]
+            [33]
+        ]
+        [8,
+            [8]
+            [5]
+        ]
+    ]
+\end{forest}
+
+\begin{forest}
+    for tree={circle, draw}
+    [8, red
+        [33
+            [2]
+            [33]
+        ]
+        [8, red
+            [8, red]
+            [inf]
+        ]
+    ]
+\end{forest}
+\begin{forest}
+    for tree={circle, draw}
+    [33,
+        [2,
+            [2]
+            [33]
+        ]
+        [inf,
+            [8]
+            [inf]
+        ]
+    ]
+\end{forest}
+
+\begin{forest}
+    for tree={circle, draw}
+    [33, red
+        [33,red
+            [2]
+            [33,red]
+        ]
+        [inf,
+            [inf]
+            [inf]
+        ]
+    ]
+\end{forest}
+\begin{forest}
+    for tree={circle, draw}
+    [2,
+        [2,
+            [2]
+            [33]
+        ]
+        [inf
+            [inf]
+            [inf]
+        ]
+    ]
+\end{forest}
+
+\begin{forest}
+    for tree={circle, draw}
+    [2, red
+        [2,red
+            [2,red]
+            [inf]
+        ]
+        [inf,
+            [inf]
+            [inf]
+        ]
+    ]
+\end{forest}
+\begin{forest}
+    for tree={circle, draw}
+    [inf,
+        [inf,
+            [2]
+            [inf]
+        ]
+        [inf
+            [inf]
+            [inf]
+        ]
+    ]
+\end{forest}
+
+
+So the runs are 3-5-10-32-43-44-64-79-98, 3-5-8-33, and 2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 \end{document}
