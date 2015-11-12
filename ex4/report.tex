@@ -1,0 +1,41 @@
+\documentclass{article} 
+\usepackage{color} 
+\usepackage{forest}
+\usepackage{mathtools}
+\usepackage[utf8]{inputenc}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\begin{document} 
+\title{TDT4225 -- Assignment 4} 
+\author{Filip F Egge}
+\date{November 12, 2015} 
+\maketitle
+
+\newpage
+\subsection*{Algebra with filter}
+Joining of two tables $A$ and $B$, $V_A = 400\:B \times 1\:000\:000 = 4 \times 10^8 = 400\:MB$, $V_B = 600\:B \times 10\:000\:000 = 6 \times 10^9 = 6000\:MB$,
+$V_R = 600\:B \times 1\:000\:000 = 6 \times 10^8 = 600\:MB$. Our workspace is $20\:MB$, this gives $n = \ceil{\frac{V_A}{M}} = \ceil{\frac{400\:MB}{20\:MB}} = 20$.
+$V_{nl}^J = V_A + nV_B + V_R = 400\:MB + 20 \times 6000\:MB + 600\:MB = 121\:GB$
+
+Join with filter.
+
+\[
+    V = 2V_A - M + V_B + V_B \delta_{F_A} \left( \ceil*{\frac{(V_A - M) \delta_{F_{A\cap B}}}{M}}\right) + V_R
+\]
+
+\subsection*{Parallel algrebra}
+\subsubsection*{Describe the different partitioning methods used in parallel algebra.}
+\subsubsection*{Why is hashing a very good method?}
+
+\subsection*{Dynamo}
+
+\subsection*{RamCloud}
+\subsubsection*{How does RamClouds ensure "durability" of data?}
+\subsubsection*{How does Ousterhout argue that RAMCloud's potential to support ACID transactions is better than for traditional disk-based ditributed databases?}
+\subsection*{Facebook TAO}
+\subsubsection*{How does Facebook TAO solve the problem that the social graph spans the whole world, and that the data should be close to the user?}
+
+
+\subsection*{Google Spanner}
+\subsubsection*{How are TimeStamps used in Spanner's transactions?}
+
+\end{document}

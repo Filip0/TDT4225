@@ -1,11 +1,13 @@
 \documentclass{article} 
 \usepackage{color} 
 \usepackage{forest}
+\usepackage{mathtools}
 \usepackage[utf8]{inputenc}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 \begin{document} 
-\title{TDT4225 -- Assignment 2} 
+\title{TDT4225 -- Assignment 3} 
 \author{Filip F Egge}
-\date{October 8, 2015} 
+\date{October 29, 2015} 
 \maketitle
 
 \newpage
@@ -93,23 +95,56 @@ They are runs 3-5-10-32-43-44-64-79-98, 3-5-8-33, and 2.
 \subsubsection*{b)}
 We find the number of dummy runs by using the following formula:
 \[
-    y = \lceil\frac{N-1}{p-1}\rceil = \lceil\frac{370-1}{90-1}\rceil = 5
-]\
+    y = \ceil*{\frac{N-1}{p-1}} = \ceil*{\frac{370-1}{90-1}} = 5
+\]
 \[
     x = y(p - 1) + 1 - N = 5(90-1) + 1 - 370 = 76
-]\
+\]
 We have to add 76 dummy files do get an optimal merge tree
 
 \subsubsection*{c)}
-
-\( V_S = 2V(w+1) = 740(log_{90}370 + 1) = 1712.48 )\
-
-
+We calculate the total I/O volume for the whole merge process.
+\( V_S = 2V(w+1) = 740(log_{90}370 + 1) = 1712.48 \)
 
 
+\subsection*{Algebra 1}
+\subsubsection*{Nested loop}
+B is read $n$ times, \( n = \ceil*{\frac{V_B}{M}} = \ceil*{\frac{300\:00 \times 600\:B}{10\:MB}} = 18 \)
+\[
+    V_{nl}^J = V_A + nV_B + V_R = 180\:MB + 18\times360\:MB + 50\:MB = 6710\:MB
+\]
+\subsubsection*{Sort}
+\[
+    V_{s1}^J = 5V_A + 5V_B + V_R = 5 \times 180\:MB + 5\times 360\:MB + 50\:MB = 2030\:MB
+\]
+
+\subsubsection*{Partitioning}
+\[
+    V_p^J = 3(V_A + V_B) +V_R = 3(180\:MB + 360\:MB) + 50\:MB = 1670\:MB
+\]
+
+The best algorithm is Partitioning.
 
 
-
+\subsection*{Algebra 2}
+Transport volume for a projection. $9\times10^6$ people in Sweden, each represented in a row of $150$ Bytes.
+$V_A = 9\times10^6 \times 150\:B = 1350\:MB$. $10^5$ different first names, $V_R = 10^5 \times 30\:B = 3\:MB$.
+\\
+Plain:
+\[
+    V_{nl}^P = \frac{V_A(V_A+M)}{2M}+V_R = 
+    \frac{1350\:MB \times (1350\:MB + 50\:MB)}{100\:MB}+3\:MB = 18\:903\:MB
+\]
+\\
+Guarding keys:
+$\alpha$ - record lenght A, $\kappa$ - key lenght, $\rho$ - record length R
+\[
+    n = \ceil*{\frac{V_A\kappa}{M\alpha}} = \ceil*{\frac{1350\:MB \times 8\:B}{50\:MB \times 150\:B}} = 2
+\]
+\[
+    V_{nl_w}^P = V_A\left(1+\frac{(n-1)\rho}{\alpha}\right) + V_R = 
+    1350\:MB\left(1+\frac{(2-1)30\:B}{150\:B}\right)+3\:MB = 1623\:MB
+\]
 
 
 
